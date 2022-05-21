@@ -268,12 +268,12 @@ siamese_model.fit_generator(generator=training_generator,
                             # validation_split=0.2,
                             # verbose=1)
 
-siamese_model.save_weights('/store/adaptive_feedback/exp_trec_robust/sample_run_trec/models/foo.weights')
+siamese_model.save_weights('trec67r.weights')
 test_generator = PairCmpDataGeneratorTest(allPairsList_test, dataFolder=DATADIR_TEST)
 predictions = siamese_model.predict(test_generator)  # just to test, will rerank LM-scored docs
 print('predict ::: ', predictions)
 print('predict shape ::: ', predictions.shape)
-with open(DATADIR + "7april.res", 'w') as outFile:     # (9)
+with open(DATADIR_TEST + 'pair_feedback_trec8.res', 'w') as outFile:     # (9)
     i = 0
     for entry in test_generator.paired_instances_ids:
         if predictions[i][0] >= 0.5:
@@ -284,9 +284,9 @@ with open(DATADIR + "7april.res", 'w') as outFile:     # (9)
 outFile.close()
 
 # measure accuracy
-gt_file = np.genfromtxt(DATADIR + 'test_input/qid_ap.pairs.gt', delimiter='\t')    # (10)
+gt_file = np.genfromtxt(DATADIR_TRAIN + 'test_input/train_ap.pairs.gt', delimiter='\t')    # (10)
 actual = gt_file[:, 2:]
-predict_file = np.genfromtxt(DATADIR + '7april.res', delimiter='\t')
+predict_file = np.genfromtxt(DATADIR_TEST + 'pair_feedback_trec8.res', delimiter='\t')
 predict = predict_file[:, 3:]
 score = accuracy_score(actual, predict)
 print('Accuracy : ', round(score, 4))
