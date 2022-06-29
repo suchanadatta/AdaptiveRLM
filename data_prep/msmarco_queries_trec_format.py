@@ -3,8 +3,8 @@ import ir_datasets
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--queryfile', default='/store/adaptive_feedback/exp_trec_robust/sample_run_trec/rlm/trec8_expanded.query')
-    parser.add_argument('--outfile', default='/store/adaptive_feedback/exp_trec_robust/sample_run_trec/rlm/trec8_expanded.query.xml')
+    parser.add_argument('--queryfile', default='/store/adaptive_feedback/exp_trecdl/rlm/dl20_expand.query')
+    parser.add_argument('--outfile', default='/store/adaptive_feedback/exp_trecdl/rlm/dl20_expand.query.xml')
     args = parser.parse_args()
 
     def from_irdataset():

@@ -34,7 +34,7 @@ expand_ap_dict = temp_dict.copy()
 print('expanded : ', expand_ap_dict)
 
 for qid, ap in qid_ap_dict.items():
-    if float(ap) > float(expand_ap_dict[qid]):
+    if float(ap) >= float(expand_ap_dict[qid]):
         res_file.writelines(qid + '\t' + ap + '\t' + qid + '\t' + expand_ap_dict[qid] + '\t1\n')
     else:
         res_file.writelines(qid + '\t' + ap + '\t' + qid + '\t' + expand_ap_dict[qid] + '\t0\n')

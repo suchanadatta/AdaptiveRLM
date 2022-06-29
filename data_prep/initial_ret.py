@@ -8,8 +8,8 @@ import argparse, csv
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--index', default='/store/index/msmarco-passage.pisa')
-    parser.add_argument('--outfile', default='/store/adaptive_feedback/trecDL_initial.bm25')
-    parser.add_argument('--query-file', default='/home/suchana/PycharmProjects/ColBERT/data/trecDL_data/trecDL_q97.tsv')
+    parser.add_argument('--outfile', default='/store/adaptive_feedback/exp_trecdl/init/dl20_1000.bm25')
+    parser.add_argument('--query-file', default='/store/collection/ms-marco/trec_DL/pass_2020.queries')
     args = parser.parse_args()
 
     index = PisaIndex(args.index)
@@ -58,7 +58,7 @@ def main():
             scores = res['score'].values
             # print(scores)
             rank = 0
-            while rank < min(len(res), 100):
+            while rank < min(len(res), 1000):
                 res_out += str(q_id) + '\tQ0\t' + str(docid[rank]) + '\t' + str(rank+1) + '\t' +\
                            str(scores[rank]) + '\tbm25' + '\n'
                 rank += 1
