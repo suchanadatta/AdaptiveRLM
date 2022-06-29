@@ -24,8 +24,8 @@ np.random.seed(seed_value)
 tf.random.set_seed(seed_value)
 
 # command line both for train and test
-DATADIR_TRAIN = '/store/adaptive_feedback/exp_trecdl/hist/dl19_init'   # (1)
-DATADIR_TEST = '/store/adaptive_feedback/exp_trecdl/hist/dl20_init'
+DATADIR_TRAIN = '/store/adaptive_feedback/exp_trec_robust/exp_top_1000/hist/trec_robust.init/'   # (1)
+DATADIR_TEST = '/store/adaptive_feedback/exp_trec_robust/exp_top_1000/hist/trec8.rlm/'
 
 # this is annoying... but this is how Conv2D layer in Keras works!
 # A matrix is treated a grayscale image, i.e. am image with num_channels = 1
@@ -56,19 +56,21 @@ class InteractionData:
 class PairedInstance:
     def __init__(self, line):
         l = line.strip().split('\t')
-        if len(l) > 2:
+        if len(l) > 1:
             self.qid_a = l[0]
-            self.qid_b = l[1]
-            self.class_label = int(l[2])
+            self.qid_b = l[0]
+            self.class_label = int(l[1])
         else:
             self.qid_a = l[0]
             self.qid_b = l[1]
 
     def __str__(self):
         return "({}, {})".format(self.qid_a, self.qid_b)
+        # return "({})".format(self.qid_a)
 
     def getKey(self):
         return "{}-{}".format(self.qid_a, self.qid_b)
+        # return "{}".format(self.qid_a)
 
 
 # Separate instances for training/test sets etc. Load only the id pairs.
@@ -90,10 +92,10 @@ class PairedInstanceIds:
             instance = PairedInstance(x)
             self.data[instance.getKey()] = instance
 
-allPairs_train = PairedInstanceIds('/store/adaptive_feedback/exp_trecdl/gt/dl19_pair.gt')   # (3)
+allPairs_train = PairedInstanceIds('/store/adaptive_feedback/exp_trec_robust/exp_top_1000/gt/trec_robust.gt.point')   # (3)
 allPairsList_train = list(allPairs_train.data.values())
 
-allPairs_test = PairedInstanceIds('/store/adaptive_feedback/exp_trecdl/gt/dl20_pair.gt')    # (4)
+allPairs_test = PairedInstanceIds('/store/adaptive_feedback/exp_trec_robust/exp_top_1000/gt/trec8_rlm.gt.point')    # (4)
 allPairsList_test = list(allPairs_test.data.values())
 
 print ('{}/{} pairs for training'.format(len(allPairsList_train), len(allPairsList_train)))
@@ -152,9 +154,9 @@ class PairCmpDataGeneratorTrain(keras.utils.Sequence):
             b_data = InteractionData(b_id, self.dataDir)
 
             w, h = a_data.matrix.shape
-            # assert a_data.matrix.shape != (K, M), a_id
+            # assert a_data.matrix.shape != (self.K, self.M), a_id
             a_data.matrix = a_data.matrix.reshape(w, h, 1)
-            # assert b_data.matrix.shape != (K, M), b_id
+            # assert b_data.matrix.shape != (self.K, self.M), b_id
             b_data.matrix = b_data.matrix.reshape(w, h, 1)
 
             X[0][i,] = a_data.matrix
@@ -245,19 +247,18 @@ def build_siamese(input_shape):
 
     # matrix_encoder = Sequential(name='sequence')
     # matrix_encoder.add(Conv2D(64, kernel_size=3, activation='relu', input_shape=input_shape))
-    # matrix_encoder.add(Flatten())
-    # matrix_encoder.add(Dense(10, activation='softmax'))
+    # model.add(Flatten())
+    # model.add(Dense(1, activation='softmax'))
 
     encoded_a = matrix_encoder(input_a)
-    encoded_b = matrix_encoder(input_b)
-    merged_vector = concatenate([encoded_a, encoded_b], axis=-1, name='concatenate')
+    # encoded_b = matrix_encoder(input_b)
+    # merged_vector = concatenate([encoded_a, encoded_b], axis=-1, name='concatenate')
 
     # And add a logistic regression (2 class - sigmoid) on top
     # used for backpropagating from the (pred, true) labels
-    predictions = Dense(1, activation='sigmoid')(merged_vector)
-    print(predictions.shape)
+    predictions = Dense(1, activation='sigmoid')(encoded_a)
 
-    siamese_net = Model([input_a, input_b], outputs=predictions)
+    siamese_net = Model([input_a], outputs=predictions)
     return siamese_net
 
 siamese_model = build_siamese((K, M, 1))
@@ -274,43 +275,28 @@ siamese_model.fit_generator(generator=training_generator,
                             # validation_split=0.2,
                             # verbose=1)
 
-<<<<<<< HEAD
-siamese_model.save_weights('/store/adaptive_feedback/exp_trecdl/models/trecdl19.weights')
-test_generator = PairCmpDataGeneratorTest(allPairsList_test, dataFolder=DATADIR_TEST)
-predictions = siamese_model.predict(test_generator)  # just to test, will rerank LM-scored docs
+siamese_model.save_weights('/store/adaptive_feedback/exp_trec_robust/exp_top_1000/foo.weight')
+# test_generator = PairCmpDataGeneratorTest(allPairsList_test, dataFolder=DATADIR_TEST)
+# predictions = siamese_model.predict(test_generator)  # just to test, will rerank LM-scored docs
 # print('predict ::: ', predictions)
 # print('predict shape ::: ', predictions.shape)
-with open('/store/adaptive_feedback/exp_trecdl/res/trecdl20.pred', 'w') as outFile:     # (9)
-=======
-siamese_model.save_weights('trec67r.weights')
-test_generator = PairCmpDataGeneratorTest(allPairsList_test, dataFolder=DATADIR_TEST)
-predictions = siamese_model.predict(test_generator)  # just to test, will rerank LM-scored docs
-print('predict ::: ', predictions)
-print('predict shape ::: ', predictions.shape)
-with open(DATADIR_TEST + 'pair_feedback_trec8.res', 'w') as outFile:     # (9)
->>>>>>> ebd16fc94015ddd90bc98730e95bad0fa2ff3584
-    i = 0
-    for entry in test_generator.paired_instances_ids:
-        if predictions[i][0] >= 0.5:
-            outFile.write(entry.qid_a + '\t' + entry.qid_b + '\t' + str(round(predictions[i][0], 4)) + '\t' + '1\n')
-        else:
-            outFile.write(entry.qid_a + '\t' + entry.qid_b + '\t' + str(round(predictions[i][0], 4)) + '\t' + '0\n')
-        i += 1
-outFile.close()
-
-# measure accuracy
-<<<<<<< HEAD
-gt_file = np.genfromtxt('/store/adaptive_feedback/exp_trecdl/gt/dl20_pair.gt', delimiter='\t')    # (10)
-actual = gt_file[:, 2:]
-predict_file = np.genfromtxt('/store/adaptive_feedback/exp_trecdl/res/trecdl20.pred', delimiter='\t')
-=======
-gt_file = np.genfromtxt(DATADIR_TRAIN + 'test_input/train_ap.pairs.gt', delimiter='\t')    # (10)
-actual = gt_file[:, 2:]
-predict_file = np.genfromtxt(DATADIR_TEST + 'pair_feedback_trec8.res', delimiter='\t')
->>>>>>> ebd16fc94015ddd90bc98730e95bad0fa2ff3584
-predict = predict_file[:, 3:]
-score = accuracy_score(actual, predict)
-print('Accuracy : ', round(score, 4))
+# with open(DATADIR + "7april.res", 'w') as outFile:     # (9)
+#     i = 0
+#     for entry in test_generator.paired_instances_ids:
+#         if predictions[i][0] >= 0.5:
+#             outFile.write(entry.qid_a + '\t' + entry.qid_b + '\t' + str(round(predictions[i][0], 4)) + '\t' + '1\n')
+#         else:
+#             outFile.write(entry.qid_a + '\t' + entry.qid_b + '\t' + str(round(predictions[i][0], 4)) + '\t' + '0\n')
+#         i += 1
+# outFile.close()
+#
+# # measure accuracy
+# gt_file = np.genfromtxt(DATADIR + 'test_input/qid_ap.pairs.gt', delimiter='\t')    # (10)
+# actual = gt_file[:, 2:]
+# predict_file = np.genfromtxt(DATADIR + '7april.res', delimiter='\t')
+# predict = predict_file[:, 3:]
+# score = accuracy_score(actual, predict)
+# print('Accuracy : ', round(score, 4))
 
 
 
