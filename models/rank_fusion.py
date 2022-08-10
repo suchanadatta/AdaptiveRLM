@@ -72,7 +72,7 @@ def main():
         sorted_rank = dict( sorted(per_doc_rank.items(), key=operator.itemgetter(1),reverse=True))
         # print(sorted_rank)
         rank = 1
-        cutoff = 100
+        cutoff = 1000
         for docid, score in sorted_rank.items():
             if rank <= cutoff:
                 res_buff += str(qid) + '\tQ0\t' + str(docid) + '\t' + str(rank) + '\t' + str(score) + '\trunid\n'
