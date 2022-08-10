@@ -15,38 +15,38 @@ def main():
     index = PisaIndex(args.index)
     bm25 = index.bm25(k1=1.2, b=0.4)
     lmdir = index.qld(mu=1000.)
-    # from irdatasets
-    # dataset = ir_datasets.load('msmarco-passage/train/split200-valid')
-    # queries = list(dataset.queries)
-    # print('Total no. of queries : ', len(queries))
+    # if from irdatasets
+    dataset = ir_datasets.load('msmarco-passage/train/split200-valid')
+    queries = list(dataset.queries)
+    print('Total no. of queries : ', len(queries))
 
-    # from tsv file
+    # if from tsv file
     q_file = open(args.query_file, 'r')
     q_read = csv.reader(q_file, delimiter='\t')
     q_dict = {line[0] : line[1] for line in q_read}
     print(q_dict)
 
-    # for irdataset
-    # res_out = ''
-    # with open(args.outfile, 'a') as outFile:
-    #     for query in list(queries):
-    #         print('Current query : ', query.text)
-    #         res = lmdir.search(query.text)
-    #         print('total hit : ', len(res))
-    #         docid = res['docno'].values
-    #         # print(docid)
-    #         scores = res['score'].values
-    #         # print(scores)
-    #         rank = 0
-    #         while rank < min(len(res), 1000):
-    #             res_out += query.query_id + '\tQ0\t' + str(docid[rank]) + '\t' + str(rank+1) + '\t' +\
-    #                        str(scores[rank]) + '\trerank-bert' + '\n'
-    #             rank += 1
-    #         outFile.write(res_out)
-    #         res_out = ''
-    # outFile.close()
+    # if for irdataset
+    res_out = ''
+    with open(args.outfile, 'a') as outFile:
+        for query in list(queries):
+            print('Current query : ', query.text)
+            res = lmdir.search(query.text)
+            print('total hit : ', len(res))
+            docid = res['docno'].values
+            # print(docid)
+            scores = res['score'].values
+            # print(scores)
+            rank = 0
+            while rank < min(len(res), 1000):
+                res_out += query.query_id + '\tQ0\t' + str(docid[rank]) + '\t' + str(rank+1) + '\t' +\
+                           str(scores[rank]) + '\trerank-bert' + '\n'
+                rank += 1
+            outFile.write(res_out)
+            res_out = ''
+    outFile.close()
 
-    # for tsv query file
+    # if for tsv query file
     res_out = ''
     with open(args.outfile, 'a') as outFile:
         for q_id, q_text in q_dict.items():

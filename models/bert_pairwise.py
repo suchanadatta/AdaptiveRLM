@@ -224,19 +224,19 @@ def main():
     adaptive_file.write(pred_out)
 
     # measure accuracy
-    gt_file = np.genfromtxt('/store/adaptive_feedback/exp_trecdl/gt/dl20_pair.gt', delimiter='\t')
-    actual = gt_file[:, 2:]
-    predict_file = np.genfromtxt('/store/adaptive_feedback/exp_trecdl/trecdl20.pred', delimiter='\t')
-    predict = predict_file[:, 2:]
-    score = accuracy_score(actual, predict)
-    print('Accuracy : ', round(score, 4))
+    # gt_file = np.genfromtxt('/store/adaptive_feedback/exp_trecdl/gt/dl20_pair.gt', delimiter='\t')
+    # actual = gt_file[:, 2:]
+    # predict_file = np.genfromtxt('/store/adaptive_feedback/exp_trecdl/trecdl20.pred', delimiter='\t')
+    # predict = predict_file[:, 2:]
+    # score = accuracy_score(actual, predict)
+    # print('Accuracy : ', round(score, 4))
 
     # t-test
-    file = np.genfromtxt('/home/suchana/Desktop/foo', delimiter='\t')
-    diff1 = file[:, 0]
-    diff2 = file[:, 1]
-    # print(stats.ttest_ind(diff1, diff2)) # individual test
-    print(stats.ttest_rel(diff1, diff2))  # paired test
+    # file = np.genfromtxt('/home/suchana/Desktop/foo', delimiter='\t')
+    # diff1 = file[:, 0]
+    # diff2 = file[:, 1]
+    # # print(stats.ttest_ind(diff1, diff2)) # individual test
+    # print(stats.ttest_rel(diff1, diff2))  # paired test
 
 if __name__ == '__main__':
     main()
